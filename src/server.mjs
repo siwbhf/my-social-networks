@@ -37,6 +37,7 @@ const Server = class Server {
   routes() {
     new routes.Users(this.app);
     new routes.Albums(this.app);
+    new routes.Groups(this.app);
 
     this.app.use((req, res) => {
       res.status(404).json({ code: 404, message: 'Not found' });
