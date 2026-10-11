@@ -1,13 +1,16 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const albumSchema = new mongoose.Schema({
-  title: {type: String, required: true},
-  description: {type: String},
-  photos: [{type: mongoose.Schema.Types.ObjectId, ref: 'Photo'}],
-  created_at: {type: Date, default: Date.now},
+  event: { type: ObjectId, ref: 'Event', required: true, index: true },
+  title: { type: String, required: true, trim: true, maxlength: 100 },
+  description: { type: String, trim: true, maxlength: 500 },
+  createdBy: { type: ObjectId, ref: 'User', required: true }
 }, {
   collection: 'albums',
-  versionKey: false
+  versionKey: false,
+  timestamps: true
 });
 
 const AlbumModel = mongoose.model('Album', albumSchema);

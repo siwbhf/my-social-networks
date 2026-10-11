@@ -1,0 +1,2725 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "My Social Networks API",
+    "version": "1.0.0",
+    "description": "API REST pour la gestion d'événements, de groupes, de discussions, d'albums photo, de sondages et de billetterie.\n\nAuthentification simplifiée : les routes protégées attendent l'en-tête `x-user-id` contenant l'identifiant d'un utilisateur existant."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "UserId": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-user-id"
+      }
+    }
+  },
+  "paths": {
+    "/users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Créer un utilisateur (email unique)",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstname": {
+                    "type": "string",
+                    "example": "Siwar"
+                  },
+                  "lastname": {
+                    "type": "string",
+                    "example": "Bouhafa"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "siwar@mail.com"
+                  }
+                }
+              },
+              "example": {
+                "firstname": "Siwar",
+                "lastname": "Bouhafa",
+                "email": "siwar@mail.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          },
+          "409": {
+            "description": "Email déjà utilisé"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Lister les utilisateurs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Récupérer un utilisateur",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Modifier un utilisateur",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstname": {
+                    "type": "string",
+                    "example": "Siwar"
+                  },
+                  "lastname": {
+                    "type": "string",
+                    "example": "B."
+                  },
+                  "age": {
+                    "type": "number",
+                    "example": 24
+                  }
+                }
+              },
+              "example": {
+                "firstname": "Siwar",
+                "lastname": "B.",
+                "age": 24
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Créer un groupe (le créateur devient administrateur)",
+        "parameters": [],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Les devs"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Groupe de test"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "public"
+                  },
+                  "membersCanPost": {
+                    "type": "boolean",
+                    "example": true
+                  },
+                  "membersCanCreateEvents": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              },
+              "example": {
+                "name": "Les devs",
+                "description": "Groupe de test",
+                "type": "public",
+                "membersCanPost": true,
+                "membersCanCreateEvents": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Lister les groupes visibles (les groupes secrets ne sont vus que par leurs membres)",
+        "parameters": [],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Détail d'un groupe",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Modifier un groupe (administrateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Nouveau nom"
+                  },
+                  "membersCanPost": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              },
+              "example": {
+                "name": "Nouveau nom",
+                "membersCanPost": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Supprimer un groupe (administrateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups/{id}/members": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Ajouter un membre (administrateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "<id utilisateur>"
+                  }
+                }
+              },
+              "example": {
+                "userId": "<id utilisateur>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          },
+          "409": {
+            "description": "Déjà membre"
+          }
+        }
+      }
+    },
+    "/groups/{id}/members/{userId}": {
+      "delete": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Retirer un membre (administrateur, ou le membre lui-même)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups/{id}/admins": {
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Promouvoir un membre administrateur",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "<id utilisateur>"
+                  }
+                }
+              },
+              "example": {
+                "userId": "<id utilisateur>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Créer un événement (le créateur devient organisateur)",
+        "parameters": [],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Soirée de promo"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Fin du semestre"
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "example": "2026-11-20T19:00:00Z"
+                  },
+                  "endDate": {
+                    "type": "string",
+                    "example": "2026-11-20T23:00:00Z"
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Paris"
+                  },
+                  "isPublic": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              },
+              "example": {
+                "name": "Soirée de promo",
+                "description": "Fin du semestre",
+                "startDate": "2026-11-20T19:00:00Z",
+                "endDate": "2026-11-20T23:00:00Z",
+                "location": "Paris",
+                "isPublic": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Lister les événements visibles",
+        "parameters": [],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups/{groupId}/events": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Créer un événement dans un groupe (tous les membres sont invités)",
+        "parameters": [
+          {
+            "name": "groupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Soirée de promo"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Fin du semestre"
+                  },
+                  "startDate": {
+                    "type": "string",
+                    "example": "2026-11-20T19:00:00Z"
+                  },
+                  "endDate": {
+                    "type": "string",
+                    "example": "2026-11-20T23:00:00Z"
+                  },
+                  "location": {
+                    "type": "string",
+                    "example": "Paris"
+                  },
+                  "isPublic": {
+                    "type": "boolean",
+                    "example": false
+                  },
+                  "inviteAll": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              },
+              "example": {
+                "name": "Soirée de promo",
+                "description": "Fin du semestre",
+                "startDate": "2026-11-20T19:00:00Z",
+                "endDate": "2026-11-20T23:00:00Z",
+                "location": "Paris",
+                "isPublic": false,
+                "inviteAll": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Détail d'un événement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Modifier un événement (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Nouveau nom"
+                  }
+                }
+              },
+              "example": {
+                "name": "Nouveau nom"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Supprimer un événement et ses données (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/participants": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Ajouter un participant (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "<id utilisateur>"
+                  }
+                }
+              },
+              "example": {
+                "userId": "<id utilisateur>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/participants/{userId}": {
+      "delete": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Retirer un participant",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/join": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Rejoindre un événement public",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/organizers": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Ajouter un organisateur (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "example": "<id utilisateur>"
+                  }
+                }
+              },
+              "example": {
+                "userId": "<id utilisateur>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/invite-group": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Inviter tous les membres d'un groupe",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupId": {
+                    "type": "string",
+                    "example": "<id groupe>"
+                  }
+                }
+              },
+              "example": {
+                "groupId": "<id groupe>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/groups/{id}/thread": {
+      "get": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Fil de discussion d'un groupe (membres)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/thread": {
+      "get": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Fil de discussion d'un événement (participants)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/threads/{id}/messages": {
+      "get": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Messages d'un fil",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Publier un message ou répondre (parentMessage)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "example": "Bonjour à tous"
+                  },
+                  "parentMessage": {
+                    "type": "string",
+                    "example": "<id message, optionnel>"
+                  }
+                }
+              },
+              "example": {
+                "content": "Bonjour à tous",
+                "parentMessage": "<id message, optionnel>"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/messages/{id}/replies": {
+      "get": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Réponses à un message",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/messages/{id}": {
+      "delete": {
+        "tags": [
+          "Threads"
+        ],
+        "summary": "Supprimer un message (auteur ou administrateur/organisateur)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/albums": {
+      "post": {
+        "tags": [
+          "Albums"
+        ],
+        "summary": "Créer un album dans un événement (participants)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Photos de la soirée"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Les meilleurs moments"
+                  }
+                }
+              },
+              "example": {
+                "title": "Photos de la soirée",
+                "description": "Les meilleurs moments"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Albums"
+        ],
+        "summary": "Albums d'un événement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/albums/{id}": {
+      "get": {
+        "tags": [
+          "Albums"
+        ],
+        "summary": "Détail d'un album",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Albums"
+        ],
+        "summary": "Modifier un album (auteur ou organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Nouveau titre"
+                  }
+                }
+              },
+              "example": {
+                "title": "Nouveau titre"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Albums"
+        ],
+        "summary": "Supprimer un album, ses photos et leurs commentaires",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/albums/{id}/photos": {
+      "post": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Poster une photo (participants)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "example": "https://exemple.com/photo.jpg"
+                  },
+                  "caption": {
+                    "type": "string",
+                    "example": "Super soirée"
+                  }
+                }
+              },
+              "example": {
+                "url": "https://exemple.com/photo.jpg",
+                "caption": "Super soirée"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Photos d'un album",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/photos/{id}": {
+      "get": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Détail d'une photo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Supprimer une photo (auteur ou organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/photos/{id}/comments": {
+      "post": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Commenter une photo (participants)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "example": "Magnifique !"
+                  }
+                }
+              },
+              "example": {
+                "text": "Magnifique !"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Commentaires d'une photo",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/comments/{id}": {
+      "delete": {
+        "tags": [
+          "Photos"
+        ],
+        "summary": "Supprimer un commentaire (auteur ou organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/polls": {
+      "post": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Créer un sondage (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Organisation"
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "text": {
+                          "type": "string",
+                          "example": "Quel plat ?"
+                        },
+                        "options": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "example": "Pizza"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "title": "Organisation",
+                "questions": [
+                  {
+                    "text": "Quel plat ?",
+                    "options": [
+                      "Pizza",
+                      "Burger",
+                      "Salade"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Sondages d'un événement (participants)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/polls/{id}": {
+      "get": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Détail d'un sondage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Supprimer un sondage et ses réponses (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/polls/{id}/answers": {
+      "post": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Répondre à un sondage (une réponse par question)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "<id question>"
+                        },
+                        "option": {
+                          "type": "string",
+                          "example": "<id option>"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "answers": [
+                  {
+                    "question": "<id question>",
+                    "option": "<id option>"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          },
+          "409": {
+            "description": "Déjà répondu"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Modifier sa réponse",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "<id question>"
+                        },
+                        "option": {
+                          "type": "string",
+                          "example": "<id option>"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "answers": [
+                  {
+                    "question": "<id question>",
+                    "option": "<id option>"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/polls/{id}/results": {
+      "get": {
+        "tags": [
+          "Polls"
+        ],
+        "summary": "Résultats du sondage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/events/{id}/ticket-types": {
+      "post": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Créer un type de billet (organisateurs, événement public)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Standard"
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 15
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 100
+                  }
+                }
+              },
+              "example": {
+                "name": "Standard",
+                "price": 15,
+                "quantity": 100
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Types de billets disponibles (public)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    },
+    "/ticket-types/{id}": {
+      "put": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Modifier un type de billet (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "price": {
+                    "type": "number",
+                    "example": 20
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "example": 120
+                  }
+                }
+              },
+              "example": {
+                "price": 20,
+                "quantity": 120
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Supprimer un type de billet non vendu (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          },
+          "409": {
+            "description": "Billets déjà vendus"
+          }
+        }
+      }
+    },
+    "/events/{id}/tickets": {
+      "post": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Acheter un billet (personne extérieure, sans compte)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ticketType": {
+                    "type": "string",
+                    "example": "<id type de billet>"
+                  },
+                  "firstname": {
+                    "type": "string",
+                    "example": "Alice"
+                  },
+                  "lastname": {
+                    "type": "string",
+                    "example": "Martin"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "alice@mail.com"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "street": {
+                        "type": "string",
+                        "example": "1 rue de la Paix"
+                      },
+                      "postalCode": {
+                        "type": "string",
+                        "example": "75002"
+                      },
+                      "city": {
+                        "type": "string",
+                        "example": "Paris"
+                      },
+                      "country": {
+                        "type": "string",
+                        "example": "France"
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "ticketType": "<id type de billet>",
+                "firstname": "Alice",
+                "lastname": "Martin",
+                "email": "alice@mail.com",
+                "address": {
+                  "street": "1 rue de la Paix",
+                  "postalCode": "75002",
+                  "city": "Paris",
+                  "country": "France"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          },
+          "409": {
+            "description": "Billet déjà pris par cette personne ou stock épuisé"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tickets"
+        ],
+        "summary": "Billets vendus (organisateurs)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "UserId": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "401": {
+            "description": "En-tête x-user-id manquant ou utilisateur inconnu"
+          },
+          "403": {
+            "description": "Droits insuffisants"
+          },
+          "404": {
+            "description": "Ressource introuvable"
+          }
+        }
+      }
+    }
+  }
+}

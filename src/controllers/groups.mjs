@@ -39,7 +39,6 @@ const Groups = class Groups {
   getGroups() {
     this.app.get('/groups', requireUser, async (req, res) => {
       try {
-        // Un groupe secret n'est visible que par ses membres
         const groups = await GroupModel.find({
           $or: [
             { type: { $in: ['public', 'private'] } },
@@ -162,7 +161,6 @@ const Groups = class Groups {
           return res.status(404).json({ code: 404, message: 'Group not found' });
         }
 
-        // Un admin retire n'importe qui, un membre peut se retirer lui-même
         const self = req.user._id.equals(req.params.userId);
         if (!isAdmin(group, req.user) && !self) {
           return res.status(403).json({ code: 403, message: 'Action non autorisée' });

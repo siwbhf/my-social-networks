@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+import { removeThreads } from '../helpers/cascade.mjs';
 
 const groupSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  description: { type: String, trim: true },
+  name: { type: String, required: true, trim: true, maxlength: 100 },
+  description: { type: String, trim: true, maxlength: 1000 },
   icon: String,
   coverPhoto: String,
   type: { type: String, enum: ['public', 'private', 'secret'], default: 'public' },
@@ -20,6 +21,11 @@ const groupSchema = new mongoose.Schema({
   collection: 'groups',
   versionKey: false,
   timestamps: true
+});
+
+groupSchema.pre('deleteOne', { document: true, query: false }, async function () {
+  await removeThreads({ group: this._id });
+  await mongoose.model('Event').updateMany({ group: this._id }, { $unset: { group: 1 } });
 });
 
 const GroupModel = mongoose.model('Group', groupSchema);
